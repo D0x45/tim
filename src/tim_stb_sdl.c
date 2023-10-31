@@ -149,7 +149,6 @@ Image tim_resize(Image *src, size_t new_width, size_t new_height)
     // upscaling duplicates every r_w|r_h pixels
 
     // iterating row-first (->)
-    #pragma omp parallel for
     for (size_t dst_y = 0; dst_y < new_height; ++dst_y) {
         for (size_t dst_x = 0; dst_x < new_width; ++dst_x) {
             // translate destination (x,y) to source (x,y)

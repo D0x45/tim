@@ -2,7 +2,7 @@
 just a simple c99 library for resizing images
 
 # Build
-the default implementation uses `SDL2` and [nothings/stb](https:/github.com/nothings/stb)
+the default implementation uses `SDL2` and [nothings/stb](https://github.com/nothings/stb)
 
 build with:
 ```sh

@@ -11,6 +11,6 @@ gcc resize.c src/tim_stb_sdl.c -g -std=c99 -o resize -lm -DTIM_IMPL_DISPLAY -lSD
 
 use `-DTIM_IMPL_DISPLAY -lSDL2 -lSDL2_image` for implementing `tim_display(...)` if you have SDL installed, otherwise omit this flag.
 
-use `-DDEBUG` to allowing debug logs.
+use `-DDEBUG` to allow debug logs.
 
 compiled with `gcc 12` on `Debian 12`.

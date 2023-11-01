@@ -55,7 +55,8 @@ int main(int argc, const char *const *argv)
 
     tim_display(&resized_image);
 
-    // tim_resize returns the same image buffer, so free()ing it twice causes segfault
+    // tim_resize returns the same image buffer if both dimensions are the same
+    // so free()ing it twice causes segfault
     return (original_image.pixels != resized_image.pixels ? tim_free(&resized_image) : 0)
         | tim_free(&original_image);
 }

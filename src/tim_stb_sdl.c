@@ -34,6 +34,7 @@
 
 // debugging enabled
 #ifdef DEBUG
+    #include <time.h> // time
     #define TRACE(...) printf(__VA_ARGS__);
     #define PX_DBG(image, x, y) printf(                                  \
         "Pixel (im: %p, x: %d, y: %d) { r: %u, g: %u, b: %u, a: %u }\n", \
@@ -75,14 +76,19 @@ Image tim_read(const char *const file)
     if (file == NULL)
         return dst_img;
 
+#ifdef DEBUG
+    time_t t_start = time(NULL);
+#endif
+
     dst_img.pixels = stbi_load(file, &dst_img.width, &dst_img.height, &dst_img.channels, 3);
 
     if (dst_img.pixels == NULL)
         fprintf(stderr, "stbi_err: %s\n", stbi_failure_reason());
 
     TRACE(
-        "tim_read(%s) => Image { width: %d, height: %d, channels: %d, pixels: %p }\n",
-        file, dst_img.width, dst_img.height, dst_img.channels, dst_img.pixels
+        "tim_read(%s) => Image { width: %d, height: %d, channels: %d, pixels: %p }; T = %lds\n",
+        file, dst_img.width, dst_img.height, dst_img.channels, dst_img.pixels,
+        time(NULL) - t_start
     );
 
     // debug display a subsequent column of pixels
@@ -145,9 +151,12 @@ Image tim_resize(Image *src, size_t new_width, size_t new_height)
     // new empty canvas
     Image dst = tim_new(new_width, new_height);
 
+#ifdef DEBUG
+    time_t t_start = time(NULL);
+#endif
+
     // downscaling skips every r_w|r_h pixels
     // upscaling duplicates every r_w|r_h pixels
-
     // iterating row-first (->)
     for (size_t dst_y = 0; dst_y < new_height; ++dst_y) {
         for (size_t dst_x = 0; dst_x < new_width; ++dst_x) {
@@ -161,21 +170,28 @@ Image tim_resize(Image *src, size_t new_width, size_t new_height)
         }
     }
 
+    TRACE("resize took: %ld seconds\n", time(NULL)-t_start);
+
     return dst;
 }
 
 int tim_write(Image *image, const char *file)
 {
-    if (image == NULL || image->pixels == NULL || file == NULL)
-    {
+    if (image == NULL || image->pixels == NULL || file == NULL) {
         fprintf(stderr, "tim_write(%p, %s) called with NULL args\n", image == NULL ? NULL : image->pixels, file);
         return -1;
     }
+#ifdef DEBUG
+    time_t t_start = time(NULL);
+#endif
     TRACE("tim_write(%p, %s)\n", image->pixels, file);
     // ignore input file format and save as jpg 100
-    return stbi_write_jpg(
+    int result = stbi_write_jpg(
         file, image->width, image->height, 3,
-        image->pixels, 100);
+        image->pixels, 100
+    );
+    TRACE("tim_write took %ld seconds\n", time(NULL)-t_start);
+    return result;
 }
 
 void tim_display(Image *image)

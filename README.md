@@ -1,5 +1,5 @@
 # Tiny Image Manipulation
-just a simple c99 library for resizing images
+just a simple c99 library for manipulating images
 
 # Build
 the default implementation uses `SDL2` and [nothings/stb](https://github.com/nothings/stb)

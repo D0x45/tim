@@ -183,7 +183,7 @@ static TIM_Result tim_grayscale(TIM_Image *im, TIM_Image *dst) {
   // since sdl does not support displaying 1ch image (or at least i could not figure it out)
   // and also apparently stbi_write_jpg writes 3 channels (or perhaps stbi_load reads 3 channels)
   // i am gonna do the same.
-  // since this is a linear grayscale image, all three channels will hold the same value
+  // as this is a linear grayscale image, all three channels will hold the same value
   res = tim_init(dst, im->width, im->height, 3);
   if (res != E_OK)
     return res;
@@ -193,7 +193,7 @@ static TIM_Result tim_grayscale(TIM_Image *im, TIM_Image *dst) {
       r = 0.2126f * (float)PX(im, x, y, RGBA_C0);
       g = 0.7152f * (float)PX(im, x, y, RGBA_C1);
       b = 0.0722f * (float)PX(im, x, y, RGBA_C2);
-      gr = r + g + b; // multiplied by alpha?
+      gr = r + g + b; // multiply by alpha so opaque values are darker?
       PX(dst, x, y, RGBA_C0) = gr;
       PX(dst, x, y, RGBA_C1) = gr;
       PX(dst, x, y, RGBA_C2) = gr;

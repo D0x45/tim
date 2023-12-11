@@ -1,6 +1,5 @@
 // C99
-#include <stdio.h>  // fprintf, stderr
-#include <stdint.h> // uint8_t
+#include <stdio.h>  // fprintf, fputs, stderr
 #include <string.h> // strlen
 #include <stdlib.h> // strtoul
 
@@ -11,8 +10,9 @@ int main(int argc, const char *const *argv)
     // windows limits MAX_PATH to 256
     // TODO: implement path join
     char dst_path[256] = "resized.jpg";
-    Image original_image, resized_image;
     size_t new_w = 0, new_h = 0;
+    TIM_Image original_image, edited_image;
+    TIM_Result tim_res = E_INTERNAL;
 
     if (argc < 3) {
         fprintf(
@@ -34,10 +34,12 @@ int main(int argc, const char *const *argv)
     new_w = strtoul(argv[2], NULL, 10);
     new_h = argc >= 4 ? strtoul(argv[3], NULL, 10) : 0;
 
-    original_image = tim_read(argv[1]);
+    tim_res = tim_file_read(&original_image, argv[1]);
 
-    if (original_image.height == 0 || original_image.width == 0 || original_image.channels == 0)
+    if (tim_res != E_OK) {
+        fputs("there was a problem reading input file\n", stderr);
         return -2;
+    }
 
     // calculate percentage
     if (argv[2][strlen(argv[2]) - 1] == '%')
@@ -46,17 +48,19 @@ int main(int argc, const char *const *argv)
     if (argc >= 4 && argv[3][strlen(argv[3]) - 1] == '%')
         new_h = (((float)new_h / 100.0f) * (float)original_image.height);
 
-    tim_display(&original_image);
-
-    resized_image = tim_resize(&original_image, new_w, new_h);
-
-    if (tim_write(&resized_image, dst_path) <= 0)
+    tim_res = tim_resize(&original_image, &edited_image, new_w, new_h);
+    
+    if (tim_res != E_OK) {
+        fputs("resize failed\n", stderr);
         return -3;
+    }
 
-    tim_display(&resized_image);
+    if (tim_file_write(&edited_image, dst_path) != E_OK) {
+        fputs("image write failed\n", stderr);
+        return -4;
+    }
 
-    // tim_resize returns the same image buffer if both dimensions are the same
-    // so free()ing it twice causes segfault
-    return (original_image.pixels != resized_image.pixels ? tim_free(&resized_image) : 0)
-        | tim_free(&original_image);
+    tim_display(&edited_image);
+
+    return tim_free(&edited_image) | tim_free(&original_image);
 }

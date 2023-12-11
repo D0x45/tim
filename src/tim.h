@@ -15,7 +15,7 @@ typedef struct {
 } TIM_Pixel;
 
 typedef struct {
-  size_t width, height, channels;
+  int width, height, channels;
   uint8_t *pixels;
 } TIM_Image;
 

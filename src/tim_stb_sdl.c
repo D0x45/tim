@@ -29,6 +29,7 @@
 #endif
 
 // color channel offsets for RGBA
+// TODO: do i need to check for stbi order or target host being little-endian?
 #define RGBA_C0 0 // red
 #define RGBA_C1 1 // green
 #define RGBA_C2 2 // blue

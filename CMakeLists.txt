@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 3.25)
-project(tim2 C)
+project(tim C)
 
-set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD 99)
 
-include_directories(src)
+# static lib
+add_library(tim STATIC "src/tim_stb_sdl.c")
 
-add_executable(tim2
-        src/stb_image.h
-        src/stb_image_write.h
-        src/tim.h
-        src/tim_stb_sdl.c
-        resize.c)
+# math library
+target_link_libraries(tim "m")
+
+# add and link resize with libtim
+add_executable(resize "resize.c")
+target_link_libraries(resize tim)

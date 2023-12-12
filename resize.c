@@ -1,9 +1,15 @@
 // C99
-#include <stdio.h>  // fprintf, fputs, stderr
+#include <stdio.h>  // stderr, fprintf, snprintf, fputs
 #include <string.h> // strlen
 #include <stdlib.h> // strtoul
 
-#include "src/tim.h" // Tiny Image Manipulation
+#include "src/tim.h"
+
+#ifdef _WIN32
+    #define DIR_SEP "\\"
+#else
+    #define DIR_SEP "/"
+#endif
 
 static const char *steps[] = {
     "reading input file",
@@ -22,7 +28,7 @@ static const char *msg[] = {
 int main(int argc, const char *const *argv)
 {
     // windows limits MAX_PATH to 256
-    // TODO: implement path join
+    // TODO: improve this
     char dst_path[256] = "resized.jpg";
     size_t new_w = 0, new_h = 0;
     tim_img original_image, edited_image;

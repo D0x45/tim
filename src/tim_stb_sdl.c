@@ -1,8 +1,8 @@
 // C99
 #include <stddef.h> // NULL
-#include <stdint.h> // uint8_t
 #include <stdio.h>  // stderr, fprintf, snprintf
 #include <stdlib.h> // calloc, free
+#include <time.h> // time
 
 #include "tim.h" // Tiny Image Manipulation
 
@@ -27,31 +27,35 @@
   *(im->pixels + ((x + im->width * y) * im->channels) + c)
 
 // debugging enabled
-#ifdef DEBUG
-#include <time.h> // time
-#define TIM_TRACE(...) fprintf(stderr, "[TIM] " __VA_ARGS__);
+#if defined(DEBUG) || !defined(NDEBUG)
+  #define TIM_DEBUG 1
 #else
-#define TIM_TRACE(...)
+  #define TIM_DEBUG 0
+#endif
+
+#if TIM_DEBUG
+  #define TIM_TRACE(...) fprintf(stderr, "[TIM] " __VA_ARGS__);
+#else
+  #define TIM_TRACE(...)
 #endif
 
 // allow implementing tim_display() with -lSDL2 -lSDL2_image -DTIM_IMPL_DISPLAY
 #ifdef TIM_IMPL_DISPLAY
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_rect.h>
-#define TIM_WINDOW_W 1024
-#define TIM_WINDOW_H 720
-#define TIM_SDL_NullCheckERR(buffer)                                           \
-  if ((buffer) == NULL) {                                                      \
-    fprintf(stderr, TIM_STRINGIFY(buffer) " is NULL, %s\n",          \
-            SDL_GetError());                                                   \
-    return TIM_ERR_INTERNAL;                                                         \
-  }
+  #include <SDL2/SDL.h>
+  #include <SDL2/SDL_image.h>
+  #include <SDL2/SDL_rect.h>
+  #define TIM_WINDOW_W 1024
+  #define TIM_WINDOW_H 720
+  #define TIM_SDL_NullCheckERR(buffer)                                           \
+    if ((buffer) == NULL) {                                                      \
+      fprintf(stderr, TIM_STRINGIFY(buffer) " is NULL, %s\n", SDL_GetError());   \
+      return TIM_ERR_INTERNAL;                                                   \
+    }
 #endif
 
 tim_err tim_init(tim_img *im, size_t width, size_t height, size_t channels) {
-  TIM_TRACE("tim_init(%p, %ld, %ld, %ld) => { pixels: %p }\n", im, width, height,
-        channels, (im == NULL) ? NULL : im->pixels);
+  TIM_TRACE("tim_init(%p, %ld, %ld, %ld) => { pixels: %p }\n", im, width,
+            height, channels, (im == NULL) ? NULL : im->pixels);
   if (im == NULL || channels < 1 || channels > 4)
     return TIM_ERR_ARG;
   im->width = width;
@@ -59,12 +63,12 @@ tim_err tim_init(tim_img *im, size_t width, size_t height, size_t channels) {
   im->channels = channels;
   im->pixels = calloc(width * height * channels, sizeof(uint8_t));
   TIM_TRACE("allocated addr %p with %ld bytes\n", im->pixels,
-        width * height * channels);
+            width * height * channels);
   return (im->pixels == NULL) ? TIM_ERR_ALLOC : TIM_ERR_OK;
 }
 
 tim_err tim_file_read(tim_img *im, const char *file) {
-#ifdef DEBUG
+#ifdef TIM_DEBUG
   time_t t_start = time(NULL);
 #endif
   TIM_TRACE("tim_file_read(%p, %p)\n", im, file);
@@ -80,16 +84,17 @@ tim_err tim_file_read(tim_img *im, const char *file) {
     return TIM_ERR_INTERNAL;
   }
 
-  TIM_TRACE("tim_file_read(%p, %s) => { w: %d, h: %d, ch: %d, px: %p } in %lds\n",
-        im, file, im->width, im->height, im->channels, im->pixels,
-        time(NULL) - t_start);
+  TIM_TRACE(
+      "tim_file_read(%p, %s) => { w: %d, h: %d, ch: %d, px: %p } in %lds\n", im,
+      file, im->width, im->height, im->channels, im->pixels,
+      time(NULL) - t_start);
 
   return TIM_ERR_OK;
 }
 
 tim_err tim_file_write(tim_img *im, const char *file) {
   int stbi_result;
-#ifdef DEBUG
+#ifdef TIM_DEBUG
   time_t t_start = time(NULL);
 #endif
 
@@ -106,8 +111,8 @@ tim_err tim_file_write(tim_img *im, const char *file) {
     return TIM_ERR_INTERNAL;
   }
 
-  TIM_TRACE("tim_file_write(%p, %s) took %ld seconds, stbi_result = %d\n", im, file,
-        time(NULL) - t_start, stbi_result);
+  TIM_TRACE("tim_file_write(%p, %s) took %ld seconds, stbi_result = %d\n", im,
+            file, time(NULL) - t_start, stbi_result);
 
   return TIM_ERR_OK;
 }
@@ -207,7 +212,7 @@ tim_err tim_resize(tim_img *im, tim_img *dst, size_t new_width,
   tim_err init_res;
   float r_h, r_w;
   size_t dst_y, dst_x, src_x, src_y;
-#ifdef DEBUG
+#ifdef TIM_DEBUG
   time_t t_start = time(NULL);
 #endif
 

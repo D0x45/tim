@@ -4,16 +4,18 @@
 #define __TIM_H__
 
 #include <stddef.h> // size_t
-#include <stdint.h> // uint8_t
+
+// clang kept saying stdint.h is unused included
+typedef unsigned char u8;
 
 // 4ch 8bpc
 typedef struct {
-  uint8_t alpha, red, green, blue;
+  u8 alpha, red, green, blue;
 } tim_pixel;
 
 typedef struct {
   int width, height, channels;
-  uint8_t *pixels;
+  u8 *pixels;
 } tim_img;
 
 typedef enum {
@@ -27,9 +29,7 @@ typedef enum {
   TIM_ERR_INTERNAL
 } tim_err;
 
-typedef enum {
-  TIM_FILTER_GRAYSCALE
-} tim_filter;
+typedef enum { TIM_FILTER_GRAYSCALE } tim_filter;
 
 /** init a new empty 8bpc image */
 tim_err tim_init(tim_img *im, size_t width, size_t height, size_t channels);
@@ -41,7 +41,8 @@ tim_err tim_file_read(tim_img *im, const char *file);
 tim_err tim_file_write(tim_img *im, const char *file);
 
 /** resize an image to the given dimensions */
-tim_err tim_resize(tim_img *im, tim_img *dst, size_t new_width, size_t new_height);
+tim_err tim_resize(tim_img *im, tim_img *dst, size_t new_width,
+                   size_t new_height);
 
 /** apply operation `f` on `im` and save it to `dst`. dst will be allocated. */
 tim_err tim_apply(tim_img *im, tim_img *dst, tim_filter f);

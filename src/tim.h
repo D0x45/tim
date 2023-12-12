@@ -8,57 +8,54 @@
 
 // 4ch 8bpc
 typedef struct {
-  uint8_t alpha;
-  uint8_t red;
-  uint8_t green;
-  uint8_t blue;
-} TIM_Pixel;
+  uint8_t alpha, red, green, blue;
+} tim_pixel;
 
 typedef struct {
   int width, height, channels;
   uint8_t *pixels;
-} TIM_Image;
+} tim_img;
 
 typedef enum {
   // no error
-  E_OK,
+  TIM_ERR_OK,
   // allocation error
-  E_ALLOC,
+  TIM_ERR_ALLOC,
   // invalid arguments (possibly null) were passed to function
-  E_INVALID_ARG,
+  TIM_ERR_ARG,
   // the underlying library failed with arbitrary error
-  E_INTERNAL
-} TIM_Result;
+  TIM_ERR_INTERNAL
+} tim_err;
 
 typedef enum {
-  FILTER_GRAYSCALE
-} TIM_Filter;
+  TIM_FILTER_GRAYSCALE
+} tim_filter;
 
 /** init a new empty 8bpc image */
-TIM_Result tim_init(TIM_Image *im, size_t width, size_t height, size_t channels);
+tim_err tim_init(tim_img *im, size_t width, size_t height, size_t channels);
 
 /** read image from file */
-TIM_Result tim_file_read(TIM_Image *im, const char *file);
+tim_err tim_file_read(tim_img *im, const char *file);
 
 /** write image to a file */
-TIM_Result tim_file_write(TIM_Image *im, const char *file);
+tim_err tim_file_write(tim_img *im, const char *file);
 
 /** resize an image to the given dimensions */
-TIM_Result tim_resize(TIM_Image *im, TIM_Image *dst, size_t new_width, size_t new_height);
+tim_err tim_resize(tim_img *im, tim_img *dst, size_t new_width, size_t new_height);
 
-/** apply filter `f` on `im` and save it to `dst`. dst will be allocated. */
-TIM_Result tim_filter(TIM_Image *im, TIM_Image *dst, TIM_Filter f);
+/** apply operation `f` on `im` and save it to `dst`. dst will be allocated. */
+tim_err tim_apply(tim_img *im, tim_img *dst, tim_filter f);
 
 /** get pixel at (x, y) */
-TIM_Result tim_pixel_get(TIM_Image *im, size_t x, size_t y, TIM_Pixel *dst);
+tim_err tim_pixel_get(tim_img *im, size_t x, size_t y, tim_pixel *dst);
 
 /** set pixel at (x, y) */
-TIM_Result tim_pixel_set(TIM_Image *im, size_t x, size_t y, TIM_Pixel *src);
+tim_err tim_pixel_set(tim_img *im, size_t x, size_t y, tim_pixel *src);
 
 /** display the image in a gui */
-TIM_Result tim_display(TIM_Image *im);
+tim_err tim_display(tim_img *im);
 
 /** clear image buffer and free the allocated memory */
-TIM_Result tim_free(TIM_Image *im);
+tim_err tim_free(tim_img *im);
 
 #endif // __TIM_H__

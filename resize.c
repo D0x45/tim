@@ -5,14 +5,29 @@
 
 #include "src/tim.h" // Tiny Image Manipulation
 
+static const char *steps[] = {
+    "reading input file",
+    "resizing",
+    "writing output file",
+    "displaying gui"
+};
+
+static const char *msg[] = {
+    "no error",
+    "memory allocation failed",
+    "invalid arguments were passed",
+    "underlying implementation failed"
+};
+
 int main(int argc, const char *const *argv)
 {
     // windows limits MAX_PATH to 256
     // TODO: implement path join
     char dst_path[256] = "resized.jpg";
     size_t new_w = 0, new_h = 0;
-    TIM_Image original_image, edited_image;
-    TIM_Result tim_res = E_INTERNAL;
+    tim_img original_image, edited_image;
+    tim_err err;
+    int s = 0;
 
     if (argc < 3) {
         fprintf(
@@ -34,12 +49,9 @@ int main(int argc, const char *const *argv)
     new_w = strtoul(argv[2], NULL, 10);
     new_h = argc >= 4 ? strtoul(argv[3], NULL, 10) : 0;
 
-    tim_res = tim_file_read(&original_image, argv[1]);
-
-    if (tim_res != E_OK) {
-        fputs("there was a problem reading input file\n", stderr);
-        return -2;
-    }
+    err = tim_file_read(&original_image, argv[1]);
+    if (err) goto failure;
+    s++;
 
     // calculate percentage
     if (argv[2][strlen(argv[2]) - 1] == '%')
@@ -48,19 +60,17 @@ int main(int argc, const char *const *argv)
     if (argc >= 4 && argv[3][strlen(argv[3]) - 1] == '%')
         new_h = (((float)new_h / 100.0f) * (float)original_image.height);
 
-    tim_res = tim_resize(&original_image, &edited_image, new_w, new_h);
-    
-    if (tim_res != E_OK) {
-        fputs("resize failed\n", stderr);
-        return -3;
-    }
+    err = tim_resize(&original_image, &edited_image, new_w, new_h);
+    if (err) goto failure;
+    s++;
 
-    if (tim_file_write(&edited_image, dst_path) != E_OK) {
-        fputs("image write failed\n", stderr);
-        return -4;
-    }
+    err = tim_file_write(&edited_image, dst_path);
+    if (err) goto failure;
+    s++;
 
-    tim_display(&edited_image);
+    err = tim_display(&edited_image);
+    if (err) goto failure;
 
     return tim_free(&edited_image) | tim_free(&original_image);
+    failure: return fprintf(stderr, "%s failed: %s\n", steps[s], msg[err]);
 }

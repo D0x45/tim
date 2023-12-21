@@ -177,7 +177,7 @@ static tim_err tim_grayscale(tim_img *im, tim_img *dst) {
   // since sdl does not support displaying 1ch image (or at least i could not
   // figure it out) and also apparently stbi_write_jpg writes 3 channels anyway
   // (or perhaps stbi_load reads 3 channels regardless) i am gonna do the same
-  // trick here to not break the code. as this is a linear grayscale image, all
+  // trick here not to break the code. as this is a linear grayscale image, all
   // three channels will hold the same value
   res = tim_init(dst, im->width, im->height, 3);
   if (res != TIM_ERR_OK)
